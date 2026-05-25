@@ -520,7 +520,8 @@ function handleFileSelect(input) {
         });
       });
 
-      // Template 6 cột: Mã CH | Loại khay | Tồn khay | Giao bổ sung | KH thu | Ngày thu khay
+      // Template 8 cột: Mã CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | KH thu | Ngày thu khay
+      // GĐV/QLKV lấy từ file Excel (cột 1,2); nếu trống thì tra DB
       hcvParsedData = [];
       var notFound = [];
       for (var i = startRow; i < rows.length; i++) {
@@ -528,9 +529,9 @@ function handleFileSelect(input) {
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột 5 (index 5)
+        // Ngày thu: cột 7 (index 7)
         var ngay = '';
-        var ngayRaw = r[5];
+        var ngayRaw = r[7];
         if (ngayRaw) {
           if (ngayRaw instanceof Date) {
             ngay = ('0'+ngayRaw.getDate()).slice(-2)+'/'+('0'+(ngayRaw.getMonth()+1)).slice(-2)+'/'+ngayRaw.getFullYear();
@@ -539,20 +540,22 @@ function handleFileSelect(input) {
           }
         }
 
-        // Tra GĐV / QLKV / tên CH từ DB
-        var info = chLookup[maCH] || {gdv:'(Không tìm thấy)', qlkv:'', tenCH:''};
+        // Ưu tiên GĐV/QLKV từ file, fallback tra DB
+        var gdvFromFile  = String(r[1]||'').trim();
+        var qlkvFromFile = String(r[2]||'').trim();
+        var info = chLookup[maCH] || {gdv:'', qlkv:'', tenCH:''};
         if (!chLookup[maCH]) notFound.push(maCH);
 
         hcvParsedData.push({
-          maCH:       maCH,
-          tenCH:      info.tenCH,
-          gdv:        info.gdv,
-          qlkv:       info.qlkv,
-          loaiKhay:   String(r[1]||'').trim(),   // cột 2: Loại khay
-          tonKhay:    parseFloat(r[2])||0,        // cột 3: Tồn khay
-          giaoBsSung: parseFloat(r[3])||0,        // cột 4: Giao bổ sung
-          keHoachThu: parseFloat(r[4])||0,        // cột 5: KH thu
-          ngayThuKhay: ngay
+          maCH:        maCH,
+          tenCH:       info.tenCH,
+          gdv:         gdvFromFile  || info.gdv,   // cột 1: GĐV
+          qlkv:        qlkvFromFile || info.qlkv,  // cột 2: QLKV
+          loaiKhay:    String(r[3]||'').trim(),    // cột 3: Loại khay
+          tonKhay:     parseFloat(r[4])||0,        // cột 4: Tồn khay
+          giaoBsSung:  parseFloat(r[5])||0,        // cột 5: Giao bổ sung
+          keHoachThu:  parseFloat(r[6])||0,        // cột 6: KH thu
+          ngayThuKhay: ngay                        // cột 7: Ngày thu
         });
       }
 
