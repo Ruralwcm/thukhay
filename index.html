@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.7</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.7</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.8</h1>
 
 </div>
 
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.7 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.8 · ' + ds;
   }
 }
 
@@ -568,9 +568,9 @@ function handleFileSelect(input) {
   reader.onload = function(e) {
     try {
       var data = new Uint8Array(e.target.result);
-      var wb = XLSX.read(data, {type:'array', cellDates:true, dateNF:'dd/mm/yyyy'});
+      var wb = XLSX.read(data, {type:'array', cellDates:true});
       var ws = wb.Sheets[wb.SheetNames[0]];
-      var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:false});
+      var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
 
       // Bỏ header row đầu tiên nếu có chữ "Mã CH" hoặc tương tự
       var startRow = 0;
@@ -598,9 +598,24 @@ function handleFileSelect(input) {
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột 7 (index 7)
-        // Ngày thu: cột 7 (index 7) — SheetJS với raw:false tự format thành string
-        var ngay = String(r[7]||'').trim();
+        // Ngày thu: cột 7 (index 7) — đọc từ cell object để lấy đúng ngày
+        var ngay = '';
+        var colH = XLSX.utils.encode_col(7); // cột H
+        var rowIdx = i + 1; // 1-indexed
+        var cellAddr = colH + rowIdx;
+        var cell = ws[cellAddr];
+        if (cell) {
+          if (cell.t === 'd' && cell.v instanceof Date) {
+            var dv = cell.v;
+            ngay = ('0'+dv.getDate()).slice(-2)+'/'+('0'+(dv.getMonth()+1)).slice(-2)+'/'+dv.getFullYear();
+          } else if (cell.t === 'n' && cell.v > 0) {
+            // Excel serial → convert
+            var epoch = new Date(Math.round((cell.v - 25569) * 86400 * 1000));
+            ngay = ('0'+epoch.getUTCDate()).slice(-2)+'/'+('0'+(epoch.getUTCMonth()+1)).slice(-2)+'/'+epoch.getUTCFullYear();
+          } else if (cell.w) {
+            ngay = cell.w; // formatted string từ Excel
+          }
+        }
 
         // Ưu tiên GĐV/QLKV từ file, fallback tra DB
         var gdvFromFile  = String(r[1]||'').trim();
