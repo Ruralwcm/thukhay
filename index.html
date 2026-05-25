@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.6</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.6</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.7</h1>
 
 </div>
 
@@ -168,7 +168,7 @@
 
     <!-- Step 4: Info + form -->
     <div class="card hidden" id="step4-card">
-      <div class="card-title">📋 Thông tin khay</div>
+      <div class="card-title" id="title-thongtin">📋 Thông tin khay</div>
       <div class="info-grid">
         <div class="info-box"><div class="lbl">Loại khay</div><div class="val" id="info-loai">—</div></div>
         <div class="info-box"><div class="lbl">Tồn khay</div><div class="val" id="info-ton">—</div></div>
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.6 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.7 · ' + ds;
   }
 }
 
@@ -439,6 +439,10 @@ function onSelectCH() {
   document.getElementById('info-ton').textContent  = (selCH.tonKhay  !== undefined && selCH.tonKhay  !== '') ? selCH.tonKhay  : '—';
   document.getElementById('info-giao').textContent = (selCH.giaoBsSung !== undefined && selCH.giaoBsSung !== '') ? selCH.giaoBsSung : '—';
   document.getElementById('info-kh').textContent   = (khVal !== undefined && khVal !== '') ? khVal : '—';
+  // Cập nhật tiêu đề "Thông tin khay - Ngày xx/xx/xx"
+  var ngayTitle = selCH.ngayThuKhay || '';
+  var titleEl = document.getElementById('title-thongtin');
+  if (titleEl) titleEl.textContent = '📋 Thông tin khay' + (ngayTitle ? ' — Ngày ' + ngayTitle : '');
   // Set max cho input SL = Tồn khay + Giao bổ sung
   var maxSL = (parseFloat(selCH.tonKhay)||0) + (parseFloat(selCH.giaoBsSung)||0);
   if (maxSL > 0) {
