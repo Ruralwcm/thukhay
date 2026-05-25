@@ -393,8 +393,13 @@ function onSelectCH() {
   document.getElementById('info-ton').textContent  = (selCH.tonKhay  !== undefined && selCH.tonKhay  !== '') ? selCH.tonKhay  : '—';
   document.getElementById('info-giao').textContent = (selCH.giaoBsSung !== undefined && selCH.giaoBsSung !== '') ? selCH.giaoBsSung : '—';
   document.getElementById('info-kh').textContent   = (khVal !== undefined && khVal !== '') ? khVal : '—';
+  // Set max cho input SL = KH thu
+  if (khVal && parseFloat(khVal) > 0) {
+    document.getElementById('inp-sl').max = parseFloat(khVal);
+  }
   // Reset form
   document.getElementById('inp-sl').value='';
+  document.getElementById('inp-sl').max='';
   document.getElementById('inp-ghi').value='';
   document.getElementById('sel-nn').value='';
   document.getElementById('nguyen-nhan-wrap').classList.add('hidden');
@@ -409,8 +414,14 @@ function onSelectCH() {
 
 // ── Input SL ──
 function onInputSL() {
-  var sl=parseFloat(document.getElementById('inp-sl').value)||0;
+  var inp=document.getElementById('inp-sl');
+  var sl=parseFloat(inp.value)||0;
   var kh=parseFloat(document.getElementById('info-kh').textContent)||0;
+  // Giới hạn không vượt kế hoạch thu
+  if(kh>0 && sl>kh){
+    inp.value=kh;
+    sl=kh;
+  }
   var pct=kh>0?Math.round(sl/kh*100):100;
   document.getElementById('progress-wrap').style.display='block';
   document.getElementById('pct-label').textContent=pct+'%';
