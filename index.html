@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.1</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.1</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.2</h1>
   <p>Xác nhận thu hồi khay — Chuỗi WinMart+ Rural</p>
 </div>
 
@@ -136,7 +136,6 @@
 
       <!-- Step 1: GĐV -->
       <div id="s1">
-        <div class="card-title">📍 Chọn Giám đốc vùng</div>
         <select id="sel-gdv" onchange="onSelectGDV()">
           <option value="">-- Chọn GĐV --</option>
           <option value="Hồ Nam">Hồ Nam — 190 CH</option>
@@ -152,7 +151,6 @@
 
       <!-- Step 2: QLKV -->
       <div id="s2" class="hidden">
-        <div class="card-title">📍 Chọn Quản lý khu vực</div>
         <select id="sel-qlkv" onchange="onSelectQLKV()">
           <option value="">-- Chọn QLKV --</option>
         </select>
@@ -315,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.1 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.2 · ' + ds;
   }
 }
 
