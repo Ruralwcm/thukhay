@@ -510,51 +510,55 @@ function handleFileSelect(input) {
         if (firstCell === 'mã ch' || firstCell === 'ma ch' || firstCell === 'mach') startRow = 1;
       }
 
+      // Build lookup: maCH → {gdv, qlkv, tenCH}
+      var chLookup = {};
+      Object.keys(DB).forEach(function(gdv) {
+        Object.keys(DB[gdv]).forEach(function(qlkv) {
+          DB[gdv][qlkv].forEach(function(ch) {
+            chLookup[ch.maCH] = {gdv: gdv, qlkv: qlkv, tenCH: ch.tenCH||''};
+          });
+        });
+      });
+
+      // Template 6 cột: Mã CH | Loại khay | Tồn khay | Giao bổ sung | KH thu | Ngày thu khay
       hcvParsedData = [];
+      var notFound = [];
       for (var i = startRow; i < rows.length; i++) {
         var r = rows[i];
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
-        // Ngày thu: cột 7 (index 7), có thể là Date object hoặc string
+
+        // Ngày thu: cột 5 (index 5)
         var ngay = '';
-        if (r[7]) {
-          if (r[7] instanceof Date) {
-            var d = r[7];
-            ngay = ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+        var ngayRaw = r[5];
+        if (ngayRaw) {
+          if (ngayRaw instanceof Date) {
+            ngay = ('0'+ngayRaw.getDate()).slice(-2)+'/'+('0'+(ngayRaw.getMonth()+1)).slice(-2)+'/'+ngayRaw.getFullYear();
           } else {
-            ngay = String(r[7]).trim();
+            ngay = String(ngayRaw).trim();
           }
         }
+
+        // Tra GĐV / QLKV / tên CH từ DB
+        var info = chLookup[maCH] || {gdv:'(Không tìm thấy)', qlkv:'', tenCH:''};
+        if (!chLookup[maCH]) notFound.push(maCH);
+
         hcvParsedData.push({
-          maCH: maCH,
-          tenCH: String(r[1]||'').trim(),  // nếu có tên CH ở cột 2 (thực tế template không có, để trống)
-          gdv: String(r[1]||'').trim(),     // cột 2: GĐV
-          qlkv: String(r[2]||'').trim(),    // cột 3: QLKV
-          loaiKhay: String(r[3]||'').trim(),// cột 4: Loại khay
-          tonKhay: parseFloat(r[4])||0,    // cột 5: Tồn khay
-          giaoBsSung: parseFloat(r[5])||0, // cột 6: Giao bổ sung
-          keHoachThu: parseFloat(r[6])||0, // cột 7: KH thu
-          ngayThuKhay: ngay                // cột 8: Ngày thu
+          maCH:       maCH,
+          tenCH:      info.tenCH,
+          gdv:        info.gdv,
+          qlkv:       info.qlkv,
+          loaiKhay:   String(r[1]||'').trim(),   // cột 2: Loại khay
+          tonKhay:    parseFloat(r[2])||0,        // cột 3: Tồn khay
+          giaoBsSung: parseFloat(r[3])||0,        // cột 4: Giao bổ sung
+          keHoachThu: parseFloat(r[4])||0,        // cột 5: KH thu
+          ngayThuKhay: ngay
         });
       }
 
-      // Nếu template chỉ có 8 cột (không có cột tên CH), map lại
-      // Col 0: Mã CH, Col 1: GĐV, Col 2: QLKV, Col 3: Loại khay,
-      // Col 4: Tồn khay, Col 5: Giao bổ sung, Col 6: KH thu, Col 7: Ngày thu
-      hcvParsedData = hcvParsedData.map(function(row) {
-        // row.gdv đang giữ giá trị cột 1 (GĐV), row.tenCH sai → fix
-        return {
-          maCH: row.maCH,
-          tenCH: '',           // template không có cột Tên CH
-          gdv: row.gdv,        // cột 1 = GĐV
-          qlkv: row.qlkv,
-          loaiKhay: row.loaiKhay,
-          tonKhay: row.tonKhay,
-          giaoBsSung: row.giaoBsSung,
-          keHoachThu: row.keHoachThu,
-          ngayThuKhay: row.ngayThuKhay
-        };
-      });
+      if (notFound.length > 0) {
+        console.warn('Mã CH không tìm thấy trong DB:', notFound.slice(0,10));
+      }
 
       if (hcvParsedData.length === 0) {
         document.getElementById('file-label').textContent='⚠️ Không đọc được dữ liệu từ file';
