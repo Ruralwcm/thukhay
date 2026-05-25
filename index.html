@@ -406,13 +406,26 @@ function submitCHT() {
   if(nnSel==='__other__'&&!document.getElementById('inp-other').value.trim()) return alert('Vui lòng nhập diễn giải!');
   var btn=document.getElementById('btn-submit');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Đang lưu...';
-  setTimeout(function(){
-    document.getElementById('step4-card').classList.add('hidden');
-    var sc=document.getElementById('success-card'); sc.classList.remove('hidden');
-    var msg='Mã CH <b>'+selCH.maCH+'</b> — '+selCH.tenCH+'<br>Thu <b>'+sl+'</b> / KH <b>'+kh+'</b> khay → <b>'+pct+'%</b>';
-    if(nn) msg+='<br>📌 '+nn;
-    document.getElementById('success-msg').innerHTML=msg;
-  },1000);
+  var _gdv=document.getElementById('sel-gdv').value;
+  var _qlkv=document.getElementById('sel-qlkv').value;
+  apiPost({
+    action:'submitXacNhan',
+    maCH:selCH.maCH, tenCH:selCH.tenCH||'', gdv:_gdv, qlkv:_qlkv,
+    loaiKhay:selCH.loaiKhay||selCH.loai||'',
+    keHoachThu:kh, slThuThucTe:sl, nguyenNhan:nn,
+    ghiChu:document.getElementById('inp-ghi').value
+  }, function(r){
+    btn.disabled=false; btn.innerHTML='✅ Xác nhận & Lưu';
+    if(r&&r.ok){
+      document.getElementById('step4-card').classList.add('hidden');
+      var sc=document.getElementById('success-card'); sc.classList.remove('hidden');
+      var msg='Mã CH <b>'+selCH.maCH+'</b> — '+(selCH.tenCH||'')+'<br>Thu <b>'+sl+'</b> / KH <b>'+kh+'</b> khay → <b>'+(r.pct||pct)+'%</b>';
+      if(nn) msg+='<br>📌 '+nn;
+      document.getElementById('success-msg').innerHTML=msg;
+    } else {
+      showAlert('submit-result','❌ '+(r&&r.error||'Lỗi kết nối'),'err');
+    }
+  });
 }
 
 function resetForm() {
