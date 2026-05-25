@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.9</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.9</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.0</h1>
 
 </div>
 
@@ -251,7 +251,7 @@
     <div class="card hidden" id="upload-card">
       <div class="card-title">📤 Upload kế hoạch thu khay</div>
       <p style="font-size:.85rem;color:var(--gray);margin-bottom:14px">
-        File Excel (cột): <b>Mã CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | Kế hoạch thu | Ngày thu khay</b>
+        File Excel (cột): <b>Mã CH | Loại khay | Tồn khay | Giao bổ sung | Kế hoạch thu | Ngày thu khay</b>
       </p>
       <div class="upload-zone" onclick="document.getElementById('file-input').click()" style="cursor:pointer">
         <div class="icon">📂</div>
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.9 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.0 · ' + ds;
   }
 }
 
@@ -598,9 +598,9 @@ function handleFileSelect(input) {
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột I (index 8) — đọc từ cell object để lấy đúng ngày
+        // Ngày thu: cột F (index 5) — đọc từ cell object để lấy đúng ngày
         var ngay = '';
-        var colH = XLSX.utils.encode_col(8); // cột I
+        var colH = XLSX.utils.encode_col(5); // cột F
         var rowIdx = i + 1; // 1-indexed
         var cellAddr = colH + rowIdx;
         var cell = ws[cellAddr];
@@ -617,22 +617,20 @@ function handleFileSelect(input) {
           }
         }
 
-        // Ưu tiên GĐV/QLKV từ file, fallback tra DB
-        var gdvFromFile  = String(r[1]||'').trim();
-        var qlkvFromFile = String(r[2]||'').trim();
-        var info = chLookup[maCH] || {gdv:'', qlkv:'', tenCH:''};
+        // GĐV/QLKV/Tên CH tra từ DB theo Mã CH
+        var info = chLookup[maCH] || {gdv:'(Không tìm thấy)', qlkv:'', tenCH:''};
         if (!chLookup[maCH]) notFound.push(maCH);
 
         hcvParsedData.push({
           maCH:        maCH,
           tenCH:       info.tenCH,
-          gdv:         gdvFromFile  || info.gdv,   // cột 1: GĐV
-          qlkv:        qlkvFromFile || info.qlkv,  // cột 2: QLKV
-          loaiKhay:    String(r[3]||'').trim(),    // cột D: Loại khay
-          tonKhay:     parseFloat(r[4])||0,        // cột E: Tồn khay
-          giaoBsSung:  parseFloat(r[5])||0,        // cột F: Giao bổ sung
-          keHoachThu:  parseFloat(r[6])||0,        // cột G: KH thu
-          ngayThuKhay: ngay                        // cột I: Ngày thu
+          gdv:         info.gdv,
+          qlkv:        info.qlkv,
+          loaiKhay:    String(r[1]||'').trim(),   // cột B: Loại khay
+          tonKhay:     parseFloat(r[2])||0,       // cột C: Tồn khay
+          giaoBsSung:  parseFloat(r[3])||0,       // cột D: Giao bổ sung
+          keHoachThu:  parseFloat(r[4])||0,       // cột E: Kế hoạch thu
+          ngayThuKhay: ngay                       // cột F: Ngày thu khay
         });
       }
 
