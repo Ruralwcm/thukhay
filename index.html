@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v1.7</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v1.8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -88,7 +88,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v1.7</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v1.8</h1>
   <p>Xác nhận thu hồi khay — Chuỗi WinMart+ Rural</p>
 </div>
 
@@ -178,6 +178,10 @@
       <div id="no-kh-alert" class="alert alert-warn show hidden" style="margin-top:12px">
         ⏳ Cửa hàng này chưa có kế hoạch thu khay.<br>
         Vui lòng liên hệ HCV để cập nhật kế hoạch.
+      </div>
+      <div id="warn-vuot-kh" class="alert alert-warn show hidden" style="margin-top:8px">
+        ⚠️ <b>Lưu ý:</b> Tồn khay + Giao bổ sung (<span id="warn-vuot-max"></span>) vượt Kế hoạch thu (<span id="warn-vuot-kh-val"></span>).<br>
+        SL thu tối đa sẽ bị giới hạn theo Tồn + Giao.
       </div>
 
       <!-- Form nhập (ẩn khi chưa có KH) -->
@@ -306,7 +310,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v1.7 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v1.8 · ' + ds;
   }
 }
 
@@ -398,6 +402,16 @@ function onSelectCH() {
   if (maxSL > 0) {
     document.getElementById('inp-sl').max = maxSL;
   }
+  // Cảnh báo khi Tồn + Giao vượt KH thu
+  var warnEl = document.getElementById('warn-vuot-kh');
+  var kh = parseFloat(khVal)||0;
+  if (maxSL > 0 && kh > 0 && maxSL > kh) {
+    document.getElementById('warn-vuot-max').textContent = maxSL;
+    document.getElementById('warn-vuot-kh-val').textContent = kh;
+    warnEl.classList.remove('hidden');
+  } else {
+    warnEl.classList.add('hidden');
+  }
   // Reset form
   document.getElementById('inp-sl').value='';
   document.getElementById('inp-sl').max='';
@@ -483,6 +497,7 @@ function resetForm() {
   document.getElementById('breadcrumb').classList.add('hidden');
   setStep(1); selCH=null;
   document.getElementById('no-kh-alert').classList.add('hidden');
+  document.getElementById('warn-vuot-kh').classList.add('hidden');
   document.getElementById('form-kh-wrap').classList.remove('hidden');
 }
 
