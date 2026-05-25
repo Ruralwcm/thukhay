@@ -607,16 +607,72 @@ function doUpload() {
     var res = document.getElementById('upload-result');
     if (r && r.ok) {
       res.innerHTML='✅ Upload thành công <b>' + (r.count||hcvParsedData.length) + ' cửa hàng</b>!'
-        + (r.ngayThuKhay ? ' · Ngày thu: <b>'+r.ngayThuKhay+'</b>' : '');
+        + (r.ngayThuKhay ? ' · Ngày thu: <b>'+r.ngayThuKhay+'</b>' : '')
+        + '<br><small style="color:#718096">⏳ Đang cập nhật danh sách cho CHT...</small>';
       res.className='alert alert-ok show';
       document.getElementById('sheet-card').classList.remove('hidden');
       if (r.ssUrl) document.getElementById('sheet-link').href = r.ssUrl;
+
+      // ── Reload DB từ Sheet để CHT thấy kế hoạch ngay ──
+      loadKeHoachFromSheet(function(ok) {
+        if (ok) {
+          res.innerHTML='✅ Upload thành công <b>' + (r.count||hcvParsedData.length) + ' cửa hàng</b>!'
+            + (r.ngayThuKhay ? ' · Ngày thu: <b>'+r.ngayThuKhay+'</b>' : '')
+            + '<br><small style="color:#27ae60">✅ Tab CHT đã sẵn sàng!</small>';
+        }
+      });
     } else {
       res.innerHTML='❌ Lỗi: ' + (r && r.error ? r.error : 'Không thể kết nối server');
       res.className='alert alert-err show';
     }
   });
 }
+
+// ── Load kế hoạch từ Sheet vào DB (dùng khi page load và sau upload) ──
+function loadKeHoachFromSheet(cb) {
+  var url = APPS_SCRIPT_URL + '?action=getDanhSachCH';
+  fetch(url)
+  .then(function(r){return r.json();})
+  .then(function(r){
+    if (r && r.ok && r.data) {
+      // Merge kế hoạch vào DB: giữ tenCH từ DB, thêm loaiKhay/tonKhay/giaoBsSung/keHoachThu/ngayThuKhay từ Sheet
+      Object.keys(r.data).forEach(function(gdv) {
+        if (!DB[gdv]) DB[gdv] = {};
+        Object.keys(r.data[gdv]).forEach(function(qlkv) {
+          if (!DB[gdv][qlkv]) DB[gdv][qlkv] = [];
+          r.data[gdv][qlkv].forEach(function(sheetCH) {
+            var found = false;
+            for (var i=0; i<DB[gdv][qlkv].length; i++) {
+              if (DB[gdv][qlkv][i].maCH === sheetCH.maCH) {
+                // Update kế hoạch vào entry hiện có
+                DB[gdv][qlkv][i].loaiKhay   = sheetCH.loaiKhay;
+                DB[gdv][qlkv][i].tonKhay    = sheetCH.tonKhay;
+                DB[gdv][qlkv][i].giaoBsSung = sheetCH.giaoBsSung;
+                DB[gdv][qlkv][i].keHoachThu = sheetCH.keHoachThu;
+                DB[gdv][qlkv][i].ngayThuKhay= sheetCH.ngayThuKhay;
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              // CH không có trong storelist → add thẳng
+              DB[gdv][qlkv].push(sheetCH);
+            }
+          });
+        });
+      });
+      if (cb) cb(true);
+    } else {
+      if (cb) cb(false);
+    }
+  })
+  .catch(function(){ if (cb) cb(false); });
+}
+
+// Auto-load khi page mở (nếu đã có kế hoạch trên Sheet)
+window.addEventListener('load', function() {
+  loadKeHoachFromSheet(null);
+});
 </script>
 </body>
 </html>
