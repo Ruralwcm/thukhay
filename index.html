@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.0</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -86,14 +86,17 @@
   .success-box .icon{font-size:3rem;margin-bottom:12px}
   .success-box h3{color:var(--green);font-size:1.2rem;margin-bottom:8px}
   .success-box p{color:var(--gray);font-size:.9rem}
-  .breadcrumb{font-size:.82rem;color:var(--gray);background:#F5F7FA;border-radius:8px;padding:8px 12px;margin-bottom:4px}
+  .breadcrumb{font-size:.82rem;color:var(--gray);background:#F5F7FA;border-radius:8px;padding:7px 12px;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:2px}
   .breadcrumb b{color:var(--blue)}
+  .bc-seg{color:var(--blue);font-weight:600;cursor:pointer;padding:2px 6px;border-radius:12px;background:var(--blue-pale);transition:background .15s}
+  .bc-seg:hover{background:#bbdefb}
+  .bc-sep{color:#bbb;margin:0 2px;font-size:.75rem}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.0</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.1</h1>
   <p>Xác nhận thu hồi khay — Chuỗi WinMart+ Rural</p>
 </div>
 
@@ -145,8 +148,6 @@
           <option value="Tạ Quốc Huy">Tạ Quốc Huy — 182 CH</option>
           <option value="Đặng Văn Dũng">Đặng Văn Dũng — 142 CH</option>
         </select>
-        <!-- Chip hiện sau khi chọn, click để đổi lại -->
-        <div id="chip-gdv" class="sel-chip hidden" onclick="resetToGDV()"></div>
       </div>
 
       <!-- Step 2: QLKV -->
@@ -155,7 +156,6 @@
         <select id="sel-qlkv" onchange="onSelectQLKV()">
           <option value="">-- Chọn QLKV --</option>
         </select>
-        <div id="chip-qlkv" class="sel-chip hidden" onclick="resetToQLKV()"></div>
       </div>
 
       <!-- Step 3: CH -->
@@ -315,7 +315,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.0 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.1 · ' + ds;
   }
 }
 
@@ -336,16 +336,23 @@ function setStep(n) {
   }
 }
 function showBreadcrumb() {
-  var gdv=document.getElementById('sel-gdv').value;
-  var qlkv=document.getElementById('sel-qlkv').value;
-  var ch=document.getElementById('sel-ch').value;
-  var parts=[];
-  if(gdv) parts.push('<b>'+gdv+'</b>');
-  if(qlkv) parts.push('<b>'+qlkv+'</b>');
-  if(ch) parts.push('<b>'+ch+'</b>');
-  var bc=document.getElementById('breadcrumb');
-  if(parts.length){bc.innerHTML='📌 '+parts.join(' › ');bc.classList.remove('hidden');}
-  else bc.classList.add('hidden');
+  var gdv  = document.getElementById('sel-gdv').value;
+  var qlkv = document.getElementById('sel-qlkv').value;
+  var ch   = document.getElementById('sel-ch').value;
+  var bc   = document.getElementById('breadcrumb');
+  if (!gdv) { bc.classList.add('hidden'); return; }
+  var html = '📌 ';
+  html += '<span class="bc-seg" onclick="resetToGDV()" title="Đổi GĐV">'+gdv+'</span>';
+  if (qlkv) {
+    html += '<span class="bc-sep">›</span>';
+    html += '<span class="bc-seg" onclick="resetToQLKV()" title="Đổi QLKV">'+qlkv+'</span>';
+  }
+  if (ch) {
+    html += '<span class="bc-sep">›</span>';
+    html += '<span style="color:#555;font-size:.8rem">'+ch+'</span>';
+  }
+  bc.innerHTML = html;
+  bc.classList.remove('hidden');
 }
 
 // ── Step 1: GĐV ──
@@ -355,12 +362,9 @@ function onSelectGDV() {
   var s3 = document.getElementById('s3');
   var c4 = document.getElementById('step4-card');
   s3.classList.add('hidden'); c4.classList.add('hidden');
-  document.getElementById('chip-qlkv').classList.add('hidden');
-  document.getElementById('sel-qlkv').classList.remove('hidden');
   if (!gdv) {
     s2.classList.add('hidden');
     document.getElementById('sel-gdv').classList.remove('hidden');
-    document.getElementById('chip-gdv').classList.add('hidden');
     setStep(1); showBreadcrumb(); return;
   }
   // Fill QLKV
@@ -369,11 +373,8 @@ function onSelectGDV() {
   Object.keys(DB[gdv]).forEach(function(q){
     var o=document.createElement('option'); o.value=q; o.textContent=q; sel.appendChild(o);
   });
-  // Ẩn dropdown GĐV → hiện chip
+  // Ẩn dropdown GĐV sau khi chọn
   document.getElementById('sel-gdv').classList.add('hidden');
-  var chip = document.getElementById('chip-gdv');
-  chip.textContent = '📍 ' + gdv + ' ';
-  chip.classList.remove('hidden');
   s2.classList.remove('hidden');
   setStep(2); showBreadcrumb();
 }
@@ -388,7 +389,6 @@ function onSelectQLKV() {
   if (!qlkv) {
     s3.classList.add('hidden');
     document.getElementById('sel-qlkv').classList.remove('hidden');
-    document.getElementById('chip-qlkv').classList.add('hidden');
     setStep(2); showBreadcrumb(); return;
   }
   var sel = document.getElementById('sel-ch');
@@ -396,33 +396,27 @@ function onSelectQLKV() {
   DB[gdv][qlkv].forEach(function(ch){
     var o=document.createElement('option'); o.value=ch.maCH; o.textContent=ch.maCH+' — '+ch.tenCH; sel.appendChild(o);
   });
-  // Ẩn dropdown QLKV → hiện chip
+  // Ẩn dropdown QLKV sau khi chọn
   document.getElementById('sel-qlkv').classList.add('hidden');
-  var chip = document.getElementById('chip-qlkv');
-  chip.textContent = '📍 ' + qlkv + ' ';
-  chip.classList.remove('hidden');
   s3.classList.remove('hidden');
   setStep(3); showBreadcrumb();
 }
 
-// ── Reset về GĐV (click chip GĐV) ──
+// ── Reset về GĐV (click segment GĐV trên breadcrumb) ──
 function resetToGDV() {
   document.getElementById('sel-gdv').classList.remove('hidden');
   document.getElementById('sel-gdv').value = '';
-  document.getElementById('chip-gdv').classList.add('hidden');
   document.getElementById('s2').classList.add('hidden');
   document.getElementById('s3').classList.add('hidden');
   document.getElementById('step4-card').classList.add('hidden');
-  document.getElementById('chip-qlkv').classList.add('hidden');
   document.getElementById('sel-qlkv').classList.remove('hidden');
   selCH = null; setStep(1); showBreadcrumb();
 }
 
-// ── Reset về QLKV (click chip QLKV) ──
+// ── Reset về QLKV (click segment QLKV trên breadcrumb) ──
 function resetToQLKV() {
   document.getElementById('sel-qlkv').classList.remove('hidden');
   document.getElementById('sel-qlkv').value = '';
-  document.getElementById('chip-qlkv').classList.add('hidden');
   document.getElementById('s3').classList.add('hidden');
   document.getElementById('step4-card').classList.add('hidden');
   selCH = null; setStep(2); showBreadcrumb();
@@ -535,10 +529,8 @@ function submitCHT() {
 function resetForm() {
   document.getElementById('sel-gdv').value='';
   document.getElementById('sel-gdv').classList.remove('hidden');
-  document.getElementById('chip-gdv').classList.add('hidden');
   document.getElementById('sel-qlkv').innerHTML='<option value="">-- Chọn QLKV --</option>';
   document.getElementById('sel-qlkv').classList.remove('hidden');
-  document.getElementById('chip-qlkv').classList.add('hidden');
   document.getElementById('sel-ch').innerHTML='<option value="">-- Chọn cửa hàng --</option>';
   document.getElementById('s2').classList.add('hidden');
   document.getElementById('s3').classList.add('hidden');
