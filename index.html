@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.0</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.0</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.1</h1>
 
 </div>
 
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.0 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.1 · ' + ds;
   }
 }
 
@@ -675,6 +675,10 @@ function doUpload() {
   var sp = document.getElementById('up-spin');
   btn.disabled=true; sp.classList.remove('hidden');
   btn.innerHTML='<span id="up-spin" class="spinner"></span>⏳ Đang upload...';
+
+  // Debug: log 3 dòng đầu để verify mapping
+  console.log('=== HCV Upload Data (3 rows) ===');
+  console.log(JSON.stringify(hcvParsedData.slice(0,3), null, 2));
 
   apiPost({action:'uploadKeHoach', data: hcvParsedData}, function(r) {
     btn.disabled=false;
