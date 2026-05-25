@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v1.0</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v1.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -88,7 +88,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v1.0</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v1.7</h1>
   <p>Xác nhận thu hồi khay — Chuỗi WinMart+ Rural</p>
 </div>
 
@@ -306,7 +306,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v1.0 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v1.7 · ' + ds;
   }
 }
 
