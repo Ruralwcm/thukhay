@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.3</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.4</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.3</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.4</h1>
 
 </div>
 
@@ -230,7 +230,7 @@
         <h3>Xác nhận thành công!</h3>
         <p id="success-msg"></p>
         <p style="margin-top:8px;font-size:.8rem;color:#90A4AE">Cảm ơn bạn đã xác nhận!</p>
-        <button class="btn btn-primary" style="margin-top:16px" onclick="resetForm()">🔄 Xác nhận CH khác</button>
+
       </div>
     </div>
 
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.3 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.4 · ' + ds;
   }
 }
 
