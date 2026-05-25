@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.4</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.5</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.4</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.5</h1>
 
 </div>
 
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.4 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.5 · ' + ds;
   }
 }
 
@@ -599,9 +599,16 @@ function handleFileSelect(input) {
         var ngayRaw = r[7];
         if (ngayRaw) {
           if (ngayRaw instanceof Date) {
+            // Date object từ SheetJS
             ngay = ('0'+ngayRaw.getDate()).slice(-2)+'/'+('0'+(ngayRaw.getMonth()+1)).slice(-2)+'/'+ngayRaw.getFullYear();
-          } else {
-            ngay = String(ngayRaw).trim();
+          } else if (typeof ngayRaw === 'number' && ngayRaw > 1000) {
+            // Excel serial date (số ngày kể từ 1/1/1900)
+            var excelEpoch = new Date(1899, 11, 30); // 30/12/1899
+            var d = new Date(excelEpoch.getTime() + ngayRaw * 86400000);
+            ngay = ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+          } else if (typeof ngayRaw === 'string' && ngayRaw.trim()) {
+            // String dạng dd/mm/yyyy hoặc yyyy-mm-dd
+            ngay = ngayRaw.trim();
           }
         }
 
