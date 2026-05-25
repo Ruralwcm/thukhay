@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v2.8</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v2.9</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.8</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v2.9</h1>
 
 </div>
 
@@ -313,7 +313,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.8 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v2.9 · ' + ds;
   }
 }
 
@@ -598,9 +598,9 @@ function handleFileSelect(input) {
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột 7 (index 7) — đọc từ cell object để lấy đúng ngày
+        // Ngày thu: cột I (index 8) — đọc từ cell object để lấy đúng ngày
         var ngay = '';
-        var colH = XLSX.utils.encode_col(7); // cột H
+        var colH = XLSX.utils.encode_col(8); // cột I
         var rowIdx = i + 1; // 1-indexed
         var cellAddr = colH + rowIdx;
         var cell = ws[cellAddr];
@@ -628,11 +628,11 @@ function handleFileSelect(input) {
           tenCH:       info.tenCH,
           gdv:         gdvFromFile  || info.gdv,   // cột 1: GĐV
           qlkv:        qlkvFromFile || info.qlkv,  // cột 2: QLKV
-          loaiKhay:    String(r[3]||'').trim(),    // cột 3: Loại khay
-          tonKhay:     parseFloat(r[4])||0,        // cột 4: Tồn khay
-          giaoBsSung:  parseFloat(r[5])||0,        // cột 5: Giao bổ sung
-          keHoachThu:  parseFloat(r[6])||0,        // cột 6: KH thu
-          ngayThuKhay: ngay                        // cột 7: Ngày thu
+          loaiKhay:    String(r[3]||'').trim(),    // cột D: Loại khay
+          tonKhay:     parseFloat(r[4])||0,        // cột E: Tồn khay
+          giaoBsSung:  parseFloat(r[5])||0,        // cột F: Giao bổ sung
+          keHoachThu:  parseFloat(r[6])||0,        // cột G: KH thu
+          ngayThuKhay: ngay                        // cột I: Ngày thu
         });
       }
 
