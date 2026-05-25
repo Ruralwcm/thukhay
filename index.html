@@ -176,6 +176,14 @@
         </div>
       </div>
 
+      <!-- Thông báo chưa có kế hoạch -->
+      <div id="no-kh-alert" class="alert alert-warn show hidden" style="margin-top:12px">
+        ⏳ Cửa hàng này chưa có kế hoạch thu khay.<br>
+        Vui lòng liên hệ HCV để cập nhật kế hoạch.
+      </div>
+
+      <!-- Form nhập (ẩn khi chưa có KH) -->
+      <div id="form-kh-wrap">
       <hr class="divider">
 
       <label>SL thu thực tế <span style="color:red">*</span></label>
@@ -207,6 +215,7 @@
 
       <button class="btn btn-success" id="btn-submit" onclick="submitCHT()">✅ Xác nhận & Lưu</button>
       <div id="submit-result" class="alert"></div>
+      </div><!-- /form-kh-wrap -->
     </div>
 
     <!-- Success -->
@@ -359,10 +368,15 @@ function onSelectCH() {
   selCH = DB[gdv][qlkv].find(function(x){return x.maCH===maCH;});
   if (!selCH) return;
   // Nếu có kế hoạch upload → dùng, nếu chưa có → demo defaults
-  document.getElementById('info-loai').textContent = selCH.loai || '(chưa upload KH)';
+  // Check kế hoạch
+  var khVal = selCH.keHoachThu !== undefined ? selCH.keHoachThu : selCH.kh;
+  var hasKH = (khVal !== undefined && khVal !== null && khVal !== '' && parseFloat(khVal) > 0);
+  document.getElementById('no-kh-alert').classList.toggle('hidden', hasKH);
+  document.getElementById('form-kh-wrap').classList.toggle('hidden', !hasKH);
+  document.getElementById('info-loai').textContent = selCH.loaiKhay || selCH.loai || '—';
   document.getElementById('info-ton').textContent  = selCH.ton  !== undefined ? selCH.ton  : '—';
   document.getElementById('info-giao').textContent = selCH.giao !== undefined ? selCH.giao : '—';
-  document.getElementById('info-kh').textContent   = selCH.kh   !== undefined ? selCH.kh   : '—';
+  document.getElementById('info-kh').textContent   = khVal !== undefined ? khVal : '—';
   // Reset form
   document.getElementById('inp-sl').value='';
   document.getElementById('inp-ghi').value='';
@@ -438,6 +452,8 @@ function resetForm() {
   document.getElementById('success-card').classList.add('hidden');
   document.getElementById('breadcrumb').classList.add('hidden');
   setStep(1); selCH=null;
+  document.getElementById('no-kh-alert').classList.add('hidden');
+  document.getElementById('form-kh-wrap').classList.remove('hidden');
 }
 
 // ── HCV ──
