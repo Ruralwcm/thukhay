@@ -392,10 +392,10 @@ function onSelectCH() {
   var hasKH = (khVal !== undefined && khVal !== null && khVal !== '' && parseFloat(khVal) > 0);
   document.getElementById('no-kh-alert').classList.toggle('hidden', hasKH);
   document.getElementById('form-kh-wrap').classList.toggle('hidden', !hasKH);
-  document.getElementById('info-loai').textContent = selCH.loaiKhay || selCH.loai || '—';
-  document.getElementById('info-ton').textContent  = selCH.ton  !== undefined ? selCH.ton  : '—';
-  document.getElementById('info-giao').textContent = selCH.giao !== undefined ? selCH.giao : '—';
-  document.getElementById('info-kh').textContent   = khVal !== undefined ? khVal : '—';
+  document.getElementById('info-loai').textContent = selCH.loaiKhay  || selCH.loai || '—';
+  document.getElementById('info-ton').textContent  = (selCH.tonKhay  !== undefined && selCH.tonKhay  !== '') ? selCH.tonKhay  : '—';
+  document.getElementById('info-giao').textContent = (selCH.giaoBsSung !== undefined && selCH.giaoBsSung !== '') ? selCH.giaoBsSung : '—';
+  document.getElementById('info-kh').textContent   = (khVal !== undefined && khVal !== '') ? khVal : '—';
   // Reset form
   document.getElementById('inp-sl').value='';
   document.getElementById('inp-ghi').value='';
