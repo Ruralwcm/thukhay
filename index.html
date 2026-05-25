@@ -285,7 +285,7 @@
 
 <script>
 // CONFIG
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2Dfn8agkKqadlDTskjTPwSAalW4vD0HwEwFmueFONawtDc0QIhXoo6R6482oEAu0q/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeTcX4whYeK2AN_HbmyRl9RruGDvcgPQ6kUNzTjFV50V8X2Qs74mb6UPRbpHDBF9Uv/exec';
 function apiPost(payload, cb) {
   fetch(APPS_SCRIPT_URL, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
   .then(function(r){return r.json();}).then(cb).catch(function(e){cb({ok:false,error:e.message});});
