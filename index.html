@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Xác nhận Thu Khay Rural Miền Bắc v1.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --blue:#1565C0;--blue2:#1976D2;--blue-pale:#E3F2FD;
@@ -235,11 +236,10 @@
   <div id="page-hcv" class="page">
     <div class="card" id="login-card">
       <div class="card-title">🔐 Đăng nhập HCV</div>
-      <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px">Demo: <b>hcv / admin</b></p>
       <label>Tên đăng nhập</label>
-      <input type="text" id="inp-user" placeholder="hcv">
+      <input type="text" id="inp-user" placeholder="Tên đăng nhập">
       <label>Mật khẩu</label>
-      <input type="password" id="inp-pass" placeholder="admin">
+      <input type="password" id="inp-pass" placeholder="Mật khẩu">
       <div id="login-err" class="alert alert-err"></div>
       <button class="btn btn-primary" onclick="doLogin()">Đăng nhập</button>
     </div>
@@ -247,37 +247,32 @@
     <div class="card hidden" id="upload-card">
       <div class="card-title">📤 Upload kế hoạch thu khay</div>
       <p style="font-size:.85rem;color:var(--gray);margin-bottom:14px">
-        File Excel: <b>Mã CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | Kế hoạch thu</b>
+        File Excel (cột): <b>Mã CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | Kế hoạch thu | Ngày thu khay</b>
       </p>
-      <div class="upload-zone" onclick="triggerDemo()">
+      <div class="upload-zone" onclick="document.getElementById('file-input').click()" style="cursor:pointer">
         <div class="icon">📂</div>
-        <div id="file-label">Nhấn để chọn file Excel (demo)</div>
+        <div id="file-label">Nhấn để chọn file Excel (.xlsx / .xls)</div>
+        <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" onchange="handleFileSelect(this)">
       </div>
       <div id="preview-area" class="hidden" style="margin-top:14px">
-        <div style="font-size:.85rem;color:var(--gray);margin-bottom:6px">📋 5 cửa hàng (demo)</div>
+        <div id="preview-summary" style="font-size:.85rem;color:var(--gray);margin-bottom:6px"></div>
         <div class="table-wrap">
           <table class="preview-table">
-            <thead><tr><th>Mã CH</th><th>Tên CH</th><th>GĐV</th><th>QLKV</th><th>KH thu</th></tr></thead>
-            <tbody>
-              <tr><td>2AAQ</td><td>Tạ Quốc Huy</td><td>Trần Quang Sơn</td><td>Khay nhựa A</td><td><b>18</b></td></tr>
-              <tr><td>2ACU</td><td>Tạ Quốc Huy</td><td>Trần Quang Sơn</td><td>Khay nhựa A</td><td><b>12</b></td></tr>
-              <tr><td>2AHG</td><td>Phạm Minh Thu</td><td>Nguyễn Văn An</td><td>Khay inox B</td><td><b>25</b></td></tr>
-              <tr><td>2AKT</td><td>Nguyễn Mạnh Sơn</td><td>Lê Văn Bình</td><td>Khay nhựa A</td><td><b>8</b></td></tr>
-              <tr><td>6169</td><td>Nguyễn Mạnh Sơn</td><td>Lê Văn Bình</td><td>Khay inox B</td><td><b>20</b></td></tr>
-            </tbody>
+            <thead><tr><th>Mã CH</th><th>Tên CH</th><th>GĐV</th><th>QLKV</th><th>Loại khay</th><th>KH thu</th><th>Ngày thu</th></tr></thead>
+            <tbody id="preview-tbody"></tbody>
           </table>
         </div>
-        <button class="btn btn-primary" onclick="doUploadDemo()">
+        <button class="btn btn-primary" id="btn-upload" onclick="doUpload()" style="margin-top:12px">
           <span id="up-spin" class="spinner hidden"></span>📤 Upload kế hoạch
         </button>
-        <div id="upload-result" class="alert"></div>
+        <div id="upload-result" class="alert" style="margin-top:10px"></div>
       </div>
     </div>
 
     <div class="card hidden" id="sheet-card">
       <div class="card-title">📊 Google Sheet kết quả</div>
-      <p style="font-size:.85rem;color:var(--gray);margin-bottom:12px">Kết quả xác nhận cập nhật realtime.</p>
-      <a href="#" onclick="alert('Demo: link Google Sheet sẽ hiện sau khi deploy thật ạ!')" class="btn btn-primary" style="text-decoration:none;display:block;text-align:center">🔗 Mở Google Sheet (demo)</a>
+      <p style="font-size:.85rem;color:var(--gray);margin-bottom:12px">Kế hoạch đã được lưu. Xem kết quả xác nhận realtime tại Sheet.</p>
+      <a id="sheet-link" href="#" target="_blank" class="btn btn-primary" style="text-decoration:none;display:block;text-align:center">🔗 Mở Google Sheet</a>
     </div>
   </div>
 
@@ -474,6 +469,8 @@ function resetForm() {
 }
 
 // ── HCV ──
+var hcvParsedData = [];
+
 function doLogin() {
   var u=document.getElementById('inp-user').value.trim();
   var p=document.getElementById('inp-pass').value;
@@ -484,20 +481,126 @@ function doLogin() {
     var e=document.getElementById('login-err'); e.textContent='❌ Sai tài khoản hoặc mật khẩu'; e.className='alert alert-err show';
   }
 }
-function triggerDemo(){
-  document.getElementById('file-label').textContent='📄 kehoach_thu_khay_25052026.xlsx (demo)';
-  document.getElementById('preview-area').classList.remove('hidden');
+
+function handleFileSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  document.getElementById('file-label').textContent='📄 ' + file.name + ' — đang đọc...';
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = new Uint8Array(e.target.result);
+      var wb = XLSX.read(data, {type:'array', cellDates:true});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+      // Bỏ header row đầu tiên nếu có chữ "Mã CH" hoặc tương tự
+      var startRow = 0;
+      if (rows.length > 0) {
+        var firstCell = String(rows[0][0]).toLowerCase().trim();
+        if (firstCell === 'mã ch' || firstCell === 'ma ch' || firstCell === 'mach') startRow = 1;
+      }
+
+      hcvParsedData = [];
+      for (var i = startRow; i < rows.length; i++) {
+        var r = rows[i];
+        var maCH = String(r[0]||'').trim();
+        if (!maCH) continue;
+        // Ngày thu: cột 7 (index 7), có thể là Date object hoặc string
+        var ngay = '';
+        if (r[7]) {
+          if (r[7] instanceof Date) {
+            var d = r[7];
+            ngay = ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+          } else {
+            ngay = String(r[7]).trim();
+          }
+        }
+        hcvParsedData.push({
+          maCH: maCH,
+          tenCH: String(r[1]||'').trim(),  // nếu có tên CH ở cột 2 (thực tế template không có, để trống)
+          gdv: String(r[1]||'').trim(),     // cột 2: GĐV
+          qlkv: String(r[2]||'').trim(),    // cột 3: QLKV
+          loaiKhay: String(r[3]||'').trim(),// cột 4: Loại khay
+          tonKhay: parseFloat(r[4])||0,    // cột 5: Tồn khay
+          giaoBsSung: parseFloat(r[5])||0, // cột 6: Giao bổ sung
+          keHoachThu: parseFloat(r[6])||0, // cột 7: KH thu
+          ngayThuKhay: ngay                // cột 8: Ngày thu
+        });
+      }
+
+      // Nếu template chỉ có 8 cột (không có cột tên CH), map lại
+      // Col 0: Mã CH, Col 1: GĐV, Col 2: QLKV, Col 3: Loại khay,
+      // Col 4: Tồn khay, Col 5: Giao bổ sung, Col 6: KH thu, Col 7: Ngày thu
+      hcvParsedData = hcvParsedData.map(function(row) {
+        // row.gdv đang giữ giá trị cột 1 (GĐV), row.tenCH sai → fix
+        return {
+          maCH: row.maCH,
+          tenCH: '',           // template không có cột Tên CH
+          gdv: row.gdv,        // cột 1 = GĐV
+          qlkv: row.qlkv,
+          loaiKhay: row.loaiKhay,
+          tonKhay: row.tonKhay,
+          giaoBsSung: row.giaoBsSung,
+          keHoachThu: row.keHoachThu,
+          ngayThuKhay: row.ngayThuKhay
+        };
+      });
+
+      if (hcvParsedData.length === 0) {
+        document.getElementById('file-label').textContent='⚠️ Không đọc được dữ liệu từ file';
+        return;
+      }
+
+      // Hiển thị preview
+      document.getElementById('file-label').textContent='📄 ' + file.name + ' — ' + hcvParsedData.length + ' cửa hàng';
+      var tbody = document.getElementById('preview-tbody');
+      tbody.innerHTML = '';
+      var showMax = Math.min(hcvParsedData.length, 10);
+      for (var j=0; j<showMax; j++) {
+        var d = hcvParsedData[j];
+        tbody.innerHTML += '<tr><td>'+d.maCH+'</td><td>'+(d.tenCH||'—')+'</td><td>'+d.gdv+'</td><td>'+d.qlkv+'</td><td>'+d.loaiKhay+'</td><td><b>'+d.keHoachThu+'</b></td><td>'+d.ngayThuKhay+'</td></tr>';
+      }
+      if (hcvParsedData.length > 10) {
+        tbody.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#718096;font-style:italic">... và '+(hcvParsedData.length-10)+' cửa hàng khác</td></tr>';
+      }
+      document.getElementById('preview-summary').textContent='📋 ' + hcvParsedData.length + ' cửa hàng (hiển thị tối đa 10 dòng)';
+      document.getElementById('preview-area').classList.remove('hidden');
+      document.getElementById('upload-result').className='alert';
+      document.getElementById('upload-result').innerHTML='';
+
+    } catch(err) {
+      document.getElementById('file-label').textContent='❌ Lỗi đọc file: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
-function doUploadDemo(){
-  var btn=document.querySelector('#upload-card .btn-primary');
-  var sp=document.getElementById('up-spin');
+
+function doUpload() {
+  if (!hcvParsedData || hcvParsedData.length === 0) {
+    alert('Vui lòng chọn file Excel trước!'); return;
+  }
+  var btn = document.getElementById('btn-upload');
+  var sp = document.getElementById('up-spin');
   btn.disabled=true; sp.classList.remove('hidden');
-  setTimeout(function(){
-    btn.disabled=false; sp.classList.add('hidden');
-    var r=document.getElementById('upload-result');
-    r.innerHTML='✅ Đã upload 5 CH thành công!'; r.className='alert alert-ok show';
-    document.getElementById('sheet-card').classList.remove('hidden');
-  },1500);
+  btn.innerHTML='<span id="up-spin" class="spinner"></span>⏳ Đang upload...';
+
+  apiPost({action:'uploadKeHoach', data: hcvParsedData}, function(r) {
+    btn.disabled=false;
+    btn.innerHTML='<span id="up-spin" class="spinner hidden"></span>📤 Upload kế hoạch';
+    var res = document.getElementById('upload-result');
+    if (r && r.ok) {
+      res.innerHTML='✅ Upload thành công <b>' + (r.count||hcvParsedData.length) + ' cửa hàng</b>!'
+        + (r.ngayThuKhay ? ' · Ngày thu: <b>'+r.ngayThuKhay+'</b>' : '');
+      res.className='alert alert-ok show';
+      document.getElementById('sheet-card').classList.remove('hidden');
+      if (r.ssUrl) document.getElementById('sheet-link').href = r.ssUrl;
+    } else {
+      res.innerHTML='❌ Lỗi: ' + (r && r.error ? r.error : 'Không thể kết nối server');
+      res.className='alert alert-err show';
+    }
+  });
 }
 </script>
 </body>
