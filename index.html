@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v4.0</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v4.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v4.0</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v4.1</h1>
 
 </div>
 
@@ -305,7 +305,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v4.0 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v4.1 · ' + ds;
   }
 }
 
@@ -594,7 +594,16 @@ function handleFileSelect(input) {
           tonKhay:     parseFloat(r[5])||0,       // F: Tồn khay
           giaoBsSung:  parseFloat(r[6])||0,       // G: Giao bổ sung
           keHoachThu:  parseFloat(r[7])||0,       // H: KH thu
-          ngayThuKhay: String(r[8]||'').trim()    // I: Ngày thu khay
+          ngayThuKhay: (function(v){
+            if(!v) return '';
+            var s = String(v).trim();
+            // Nếu đã đúng dd/MM/yyyy → giữ nguyên
+            if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+            // M/D/YYYY hoặc M/DD/YYYY (Excel US format)
+            var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if(m) return ('0'+m[2]).slice(-2)+'/'+('0'+m[1]).slice(-2)+'/'+m[3];
+            return s;
+          })(r[8])                               // I: Ngày thu khay
         });
       }
 
