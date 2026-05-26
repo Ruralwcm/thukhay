@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.7</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.7</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.8</h1>
 
 </div>
 
@@ -319,7 +319,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.7 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.8 · ' + ds;
   }
 }
 
@@ -486,14 +486,17 @@ function onInputSL() {
   } else {
     if(warnSL) warnSL.classList.add('hidden');
   }
+  // Hiển thị % theo KH thu (để tham khảo)
   var pct=kh>0?Math.round(sl/kh*100):100;
   document.getElementById('progress-wrap').style.display='block';
   document.getElementById('pct-label').textContent=pct+'%';
   var bar=document.getElementById('pct-bar');
   bar.style.width=Math.min(pct,100)+'%';
   bar.style.background=pct>=80?'var(--green)':pct>=50?'#FB8C00':'var(--red)';
+  // Rule lý do: SL < 80% của (Tồn + Giao bổ sung)
+  var pctMax = maxSL>0 ? Math.round(sl/maxSL*100) : 100;
   var nnw=document.getElementById('nguyen-nhan-wrap');
-  if(pct<80&&sl>=0){nnw.classList.remove('hidden');}
+  if(pctMax<80){nnw.classList.remove('hidden');}
   else{nnw.classList.add('hidden');document.getElementById('sel-nn').value='';document.getElementById('other-wrap').classList.add('hidden');document.getElementById('inp-other').value='';}
 }
 
@@ -509,11 +512,14 @@ function submitCHT() {
   var sl=parseFloat(document.getElementById('inp-sl').value);
   var kh=parseFloat(document.getElementById('info-kh').textContent)||0;
   var pct=kh>0?Math.round(sl/kh*100):100;
+  // Rule lý do: dựa trên Tồn + Giao bổ sung
+  var maxSL=(parseFloat(selCH?selCH.tonKhay:0)||0)+(parseFloat(selCH?selCH.giaoBsSung:0)||0);
+  var pctMax=maxSL>0?Math.round(sl/maxSL*100):100;
   var nnSel=document.getElementById('sel-nn').value;
   var nn=nnSel==='__other__'?('Lý do khác: '+document.getElementById('inp-other').value.trim()):nnSel;
   if(!selCH) return alert('Vui lòng chọn cửa hàng!');
   if(isNaN(sl)||sl<0) return alert('Vui lòng nhập SL thu thực tế hợp lệ!');
-  if(pct<80&&!nnSel) return alert('Vui lòng chọn nguyên nhân!');
+  if(pctMax<80&&!nnSel) return alert('Vui lòng chọn nguyên nhân!');
   if(nnSel==='__other__'&&!document.getElementById('inp-other').value.trim()) return alert('Vui lòng nhập diễn giải!');
   var btn=document.getElementById('btn-submit');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Đang lưu...';
