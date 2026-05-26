@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.6</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.6</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.7</h1>
 
 </div>
 
@@ -319,7 +319,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.6 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.7 · ' + ds;
   }
 }
 
@@ -604,24 +604,8 @@ function handleFileSelect(input) {
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột H (index 7)
-        var ngay = '';
-        var colH = XLSX.utils.encode_col(7); // cột H
-        var rowIdx = i + 1; // 1-indexed
-        var cellAddr = colH + rowIdx;
-        var cell = ws[cellAddr];
-        if (cell) {
-          if (cell.t === 'd' && cell.v instanceof Date) {
-            var dv = cell.v;
-            ngay = ('0'+dv.getDate()).slice(-2)+'/'+('0'+(dv.getMonth()+1)).slice(-2)+'/'+dv.getFullYear();
-          } else if (cell.t === 'n' && cell.v > 0) {
-            // Excel serial → convert
-            var epoch = new Date(Math.round((cell.v - 25569) * 86400 * 1000));
-            ngay = ('0'+epoch.getUTCDate()).slice(-2)+'/'+('0'+(epoch.getUTCMonth()+1)).slice(-2)+'/'+epoch.getUTCFullYear();
-          } else if (cell.w) {
-            ngay = cell.w; // formatted string từ Excel
-          }
-        }
+        // Ngày thu: cột H (index 7) — file lưu dạng string dd/mm/yyyy
+        var ngay = String(r[7]||'').trim();
 
         // GĐV/QLKV lấy từ file Excel, Tên CH tra từ DB
         var gdvFromFile  = String(r[1]||'').trim();  // B: GĐV
