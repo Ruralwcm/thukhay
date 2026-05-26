@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.4</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.5</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.4</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.5</h1>
 
 </div>
 
@@ -319,7 +319,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.4 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.5 · ' + ds;
   }
 }
 
@@ -724,6 +724,8 @@ function loadKeHoachFromSheet(cb) {
       Object.keys(r.data).forEach(function(gdv) {
         if (!DB[gdv]) DB[gdv] = {};
         Object.keys(r.data[gdv]).forEach(function(qlkv) {
+          // Bỏ qua nếu qlkv là số (data lỗi từ upload cũ)
+          if (!isNaN(qlkv) && qlkv.trim() !== '') return;
           if (!DB[gdv][qlkv]) DB[gdv][qlkv] = [];
           r.data[gdv][qlkv].forEach(function(sheetCH) {
             var found = false;
