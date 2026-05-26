@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.2</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.2</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.3</h1>
 
 </div>
 
@@ -319,7 +319,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.2 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.3 · ' + ds;
   }
 }
 
@@ -580,9 +580,25 @@ function handleFileSelect(input) {
 
       // Bỏ header row đầu tiên nếu có chữ "Mã CH" hoặc tương tự
       var startRow = 0;
+      var colOffset = 0; // offset nếu có cột STT đầu tiên
       if (rows.length > 0) {
         var firstCell = String(rows[0][0]).toLowerCase().trim();
-        if (firstCell === 'mã ch' || firstCell === 'ma ch' || firstCell === 'mach') startRow = 1;
+        var secondCell = String(rows[0][1]||'').toLowerCase().trim();
+        // Nếu header row
+        if (firstCell === 'mã ch' || firstCell === 'ma ch' || firstCell === 'mach') {
+          startRow = 1; colOffset = 0;
+        } else if (secondCell === 'mã ch' || secondCell === 'ma ch' || secondCell === 'mach') {
+          // Có cột STT ở đầu
+          startRow = 1; colOffset = 1;
+        } else {
+          // Không có header — check xem cột 0 có phải STT không
+          var r0c0 = String(rows[1] ? rows[1][0] : '').trim();
+          var r0c1 = String(rows[1] ? rows[1][1] : '').trim();
+          // Nếu cột 0 là số thứ tự (1,2,3...) và cột 1 là Mã CH (4-6 ký tự)
+          if (!isNaN(r0c0) && r0c1.length >= 4 && r0c1.length <= 6) {
+            colOffset = 1;
+          }
+        }
       }
 
       // Build lookup: maCH → {gdv, qlkv, tenCH}
@@ -601,12 +617,12 @@ function handleFileSelect(input) {
       var notFound = [];
       for (var i = startRow; i < rows.length; i++) {
         var r = rows[i];
-        var maCH = String(r[0]||'').trim();
+        var maCH = String(r[colOffset]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột F (index 5) — đọc từ cell object để lấy đúng ngày
+        // Ngày thu: cột F hoặc G tuỳ colOffset — đọc từ cell object
         var ngay = '';
-        var colH = XLSX.utils.encode_col(5); // cột F
+        var colH = XLSX.utils.encode_col(colOffset + 5); // cột F (hoặc G nếu có STT)
         var rowIdx = i + 1; // 1-indexed
         var cellAddr = colH + rowIdx;
         var cell = ws[cellAddr];
@@ -632,11 +648,11 @@ function handleFileSelect(input) {
           tenCH:       info.tenCH,
           gdv:         info.gdv,
           qlkv:        info.qlkv,
-          loaiKhay:    String(r[1]||'').trim(),   // cột B: Loại khay
-          tonKhay:     parseFloat(r[2])||0,       // cột C: Tồn khay
-          giaoBsSung:  parseFloat(r[3])||0,       // cột D: Giao bổ sung
-          keHoachThu:  parseFloat(r[4])||0,       // cột E: Kế hoạch thu
-          ngayThuKhay: ngay                       // cột F: Ngày thu khay
+          loaiKhay:    String(r[colOffset+1]||'').trim(),
+          tonKhay:     parseFloat(r[colOffset+2])||0,
+          giaoBsSung:  parseFloat(r[colOffset+3])||0,
+          keHoachThu:  parseFloat(r[colOffset+4])||0,
+          ngayThuKhay: ngay
         });
       }
 
