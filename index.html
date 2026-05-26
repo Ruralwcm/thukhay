@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v4.2</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v4.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v4.2</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v4.3</h1>
 
 </div>
 
@@ -305,7 +305,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v4.2 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v4.3 · ' + ds;
   }
 }
 
@@ -360,8 +360,12 @@ function onSelectGDV() {
   // Fill QLKV
   var sel = document.getElementById('sel-qlkv');
   sel.innerHTML = '<option value="">-- Chọn QLKV --</option>';
+  // Chỉ hiện QLKV có ít nhất 1 CH có kế hoạch
   Object.keys(DB[gdv]).forEach(function(q){
-    var o=document.createElement('option'); o.value=q; o.textContent=q; sel.appendChild(o);
+    var hasKH = (DB[gdv][q]||[]).some(function(ch){ return ch.keHoachThu && parseFloat(ch.keHoachThu)>0; });
+    if (!hasKH) return;
+    var cnt = (DB[gdv][q]||[]).filter(function(ch){ return ch.keHoachThu && parseFloat(ch.keHoachThu)>0; }).length;
+    var o=document.createElement('option'); o.value=q; o.textContent=q+' ('+cnt+' CH)'; sel.appendChild(o);
   });
   // Ẩn dropdown GĐV sau khi chọn
   document.getElementById('sel-gdv').classList.add('hidden');
@@ -383,9 +387,19 @@ function onSelectQLKV() {
   }
   var sel = document.getElementById('sel-ch');
   sel.innerHTML = '<option value="">-- Chọn cửa hàng --</option>';
-  DB[gdv][qlkv].forEach(function(ch){
-    var o=document.createElement('option'); o.value=ch.maCH; o.textContent=ch.maCH+' — '+ch.tenCH; sel.appendChild(o);
-  });
+  // Chỉ hiện CH có trong kế hoạch (keHoachThu > 0)
+  var chList = (DB[gdv] && DB[gdv][qlkv]) ? DB[gdv][qlkv].filter(function(ch){
+    return ch.keHoachThu && parseFloat(ch.keHoachThu) > 0;
+  }) : [];
+  if (chList.length === 0) {
+    sel.innerHTML = '<option value="">⚠️ Không có CH nào có kế hoạch trong QLKV này</option>';
+  } else {
+    chList.forEach(function(ch){
+      var o=document.createElement('option'); o.value=ch.maCH;
+      o.textContent=ch.maCH+' — '+ch.tenCH+(ch.ngayThuKhay?' ('+ch.ngayThuKhay+')':'');
+      sel.appendChild(o);
+    });
+  }
   // Ẩn dropdown QLKV sau khi chọn
   document.getElementById('sel-qlkv').classList.add('hidden');
   s3.classList.remove('hidden');
