@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.9</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v4.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.9</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v4.0</h1>
 
 </div>
 
@@ -137,21 +137,7 @@
       <!-- Step 1: GĐV -->
       <div id="s1">
         <select id="sel-gdv" onchange="onSelectGDV()">
-          <option value="">-- Chọn GĐV --</option>
-          <option value="Bùi Anh Tuấn">Bùi Anh Tuấn — 101 CH</option>
-          <option value="Hoàng Nguyễn Tú Anh">Hoàng Nguyễn Tú Anh — 116 CH</option>
-          <option value="Hồ Nam">Hồ Nam — 190 CH</option>
-          <option value="Lê Thị Hồng Thu">Lê Thị Hồng Thu — 219 CH</option>
-          <option value="Lạc Nhật Minh">Lạc Nhật Minh — 134 CH</option>
-          <option value="Nguyễn Đức Chung">Nguyễn Đức Chung — 276 CH</option>
-          <option value="Nguyễn Duy Đoàn">Nguyễn Duy Đoàn — 242 CH</option>
-          <option value="Nguyễn Mạnh Sơn">Nguyễn Mạnh Sơn — 175 CH</option>
-          <option value="Nguyễn Thị Thu">Nguyễn Thị Thu — 86 CH</option>
-          <option value="Phạm Minh Thu">Phạm Minh Thu — 111 CH</option>
-          <option value="Tạ Công Nhận">Tạ Công Nhận — 163 CH</option>
-          <option value="Tạ Quốc Huy">Tạ Quốc Huy — 182 CH</option>
-          <option value="Đặng Văn Dũng">Đặng Văn Dũng — 142 CH</option>
-          <option value="Đỗ Quỳnh Thùy Trang">Đỗ Quỳnh Thùy Trang — 100 CH</option>
+          <option value="">⏳ Đang tải kế hoạch...</option>
         </select>
       </div>
 
@@ -319,7 +305,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.9 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v4.0 · ' + ds;
   }
 }
 
@@ -716,12 +702,31 @@ function loadKeHoachFromSheet(cb) {
           });
         });
       });
+      // Rebuild GĐV dropdown từ Sheet data (chỉ hiện GĐV có trong kế hoạch)
+      var gdvList = Object.keys(r.data).sort();
+      var selGdv = document.getElementById('sel-gdv');
+      selGdv.innerHTML = '<option value="">-- Chọn GĐV --</option>';
+      gdvList.forEach(function(gdv) {
+        var total = 0;
+        Object.keys(r.data[gdv]).forEach(function(q){ total += r.data[gdv][q].length; });
+        var o = document.createElement('option');
+        o.value = gdv; o.textContent = gdv + ' — ' + total + ' CH';
+        selGdv.appendChild(o);
+      });
+      selGdv.classList.remove('hidden');
       if (cb) cb(true);
     } else {
+      // Không có kế hoạch → hiện thông báo
+      var selGdv = document.getElementById('sel-gdv');
+      selGdv.innerHTML = '<option value="">⚠️ Chưa có kế hoạch — HCV cần upload trước</option>';
       if (cb) cb(false);
     }
   })
-  .catch(function(){ if (cb) cb(false); });
+  .catch(function(){
+    var selGdv = document.getElementById('sel-gdv');
+    if(selGdv) selGdv.innerHTML = '<option value="">❌ Lỗi kết nối Sheet</option>';
+    if (cb) cb(false);
+  });
 }
 
 // Auto-load khi page mở (nếu đã có kế hoạch trên Sheet)
