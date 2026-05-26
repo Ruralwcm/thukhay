@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xác nhận Thu Khay Rural Miền Bắc v3.8</title>
+<title>Xác nhận Thu Khay Rural Miền Bắc v3.9</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
@@ -96,7 +96,7 @@
 <body>
 
 <div class="header">
-  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.8</h1>
+  <h1 id="main-title">📦 Xác nhận Thu Khay Rural Miền Bắc · v3.9</h1>
 
 </div>
 
@@ -257,7 +257,7 @@
     <div class="card hidden" id="upload-card">
       <div class="card-title">📤 Upload kế hoạch thu khay</div>
       <p style="font-size:.85rem;color:var(--gray);margin-bottom:14px">
-        File Excel (cột): <b>Mã CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | Kế hoạch thu | Ngày thu khay</b>
+        File Excel (cột): <b>Mã CH | Tên CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | Kế hoạch thu | Ngày thu khay</b>
       </p>
       <div class="upload-zone" onclick="document.getElementById('file-input').click()" style="cursor:pointer">
         <div class="icon">📂</div>
@@ -319,7 +319,7 @@ function updateTitleWithDate() {
     var d = new Date(ngay);
     var ds = isNaN(d.getTime()) ? ngay : d.toLocaleDateString('vi-VN');
     var el = document.getElementById('main-title');
-    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.8 · ' + ds;
+    if(el) el.textContent = '📦 Xác nhận Thu Khay Rural Miền Bắc · v3.9 · ' + ds;
   }
 }
 
@@ -591,48 +591,25 @@ function handleFileSelect(input) {
         if (firstCell === 'mã ch' || firstCell === 'ma ch' || firstCell === 'mach') startRow = 1;
       }
 
-      // Build lookup: maCH → {gdv, qlkv, tenCH}
-      var chLookup = {};
-      Object.keys(DB).forEach(function(gdv) {
-        Object.keys(DB[gdv]).forEach(function(qlkv) {
-          DB[gdv][qlkv].forEach(function(ch) {
-            chLookup[ch.maCH] = {gdv: gdv, qlkv: qlkv, tenCH: ch.tenCH||''};
-          });
-        });
-      });
-
-      // Template 8 cột: Mã CH | GĐV | QLKV | Loại khay | Tồn khay | Giao bổ sung | KH thu | Ngày thu khay
-      // GĐV/QLKV lấy từ file Excel (cột 1,2); nếu trống thì tra DB
+      // Template 9 cột: Mã CH | Tên CH | GĐV | QLKV | Loại khay | Tồn | Giao BS | KH thu | Ngày thu
+      // Toàn bộ lấy từ file, không cần tra DB
       hcvParsedData = [];
-      var notFound = [];
       for (var i = startRow; i < rows.length; i++) {
         var r = rows[i];
         var maCH = String(r[0]||'').trim();
         if (!maCH) continue;
 
-        // Ngày thu: cột H (index 7) — file lưu dạng string dd/mm/yyyy
-        var ngay = String(r[7]||'').trim();
-
-        // GĐV/QLKV lấy từ file Excel, Tên CH tra từ DB
-        var gdvFromFile  = String(r[1]||'').trim();  // B: GĐV
-        var qlkvFromFile = String(r[2]||'').trim();  // C: QLKV
-        var info = chLookup[maCH] || {tenCH:''};
-
         hcvParsedData.push({
           maCH:        maCH,
-          tenCH:       info.tenCH || '',
-          gdv:         gdvFromFile,
-          qlkv:        qlkvFromFile,
-          loaiKhay:    String(r[3]||'').trim(),   // D: Loại khay
-          tonKhay:     parseFloat(r[4])||0,       // E: Tồn khay
-          giaoBsSung:  parseFloat(r[5])||0,       // F: Giao bổ sung
-          keHoachThu:  parseFloat(r[6])||0,       // G: KH thu
-          ngayThuKhay: ngay                        // H: Ngày thu khay
+          tenCH:       String(r[1]||'').trim(),   // B: Tên CH
+          gdv:         String(r[2]||'').trim(),   // C: GĐV
+          qlkv:        String(r[3]||'').trim(),   // D: QLKV
+          loaiKhay:    String(r[4]||'').trim(),   // E: Loại khay
+          tonKhay:     parseFloat(r[5])||0,       // F: Tồn khay
+          giaoBsSung:  parseFloat(r[6])||0,       // G: Giao bổ sung
+          keHoachThu:  parseFloat(r[7])||0,       // H: KH thu
+          ngayThuKhay: String(r[8]||'').trim()    // I: Ngày thu khay
         });
-      }
-
-      if (notFound.length > 0) {
-        console.warn('Mã CH không tìm thấy trong DB:', notFound.slice(0,10));
       }
 
       if (hcvParsedData.length === 0) {
